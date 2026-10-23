@@ -1,0 +1,74 @@
+{
+  "study_name": "Usability Evaluation EchoLog",
+  "version": "1.2",
+  "last_update": "2026-08-10T15:38:22",
+  "local_start": "2026-10-20T19:29:00",
+  "study_start": "2026-10-20T19:29:00",
+  "end": "2026-10-20T19:54:00",
+  "time_interpretation": "local",
+  "sampling_designs": {
+    "start": {
+      "filepath_html": "questionnaire_view.html",
+      "filepath_json": "questionnaire_start.json",
+      "title": "Start-Fragebogen",
+      "message": "[Start | 19:29] Willkommen! Bitte füllen Sie den Start-Fragebogen aus, um die Studie zu beginnen."
+    },
+    "end": {
+      "filepath_html": "questionnaire_view.html",
+      "filepath_json": "questionnaire_end.json",
+      "title": "End-Fragebogen",
+      "message": "[End | nach 19:54] Die Studie ist beendet. Vielen Dank für Ihre Teilnahme! Bitte füllen Sie den Abschlussfragebogen aus."
+    },
+    "event_based": [
+      {
+        "filepath_html": "questionnaire_view.html",
+        "filepath_json": "questionnaire_event_based.json",
+        "title": "Event-basiert: Manueller Check-in",
+        "message": "[Event] Dieser Fragebogen kann jederzeit manuell gestartet werden."
+      }
+    ],
+    "datetime": [
+      {
+        "filepath_html": "questionnaire_view.html",
+        "filepath_json": "questionnaire_time_based.json",
+        "title": "Zeitbasiert: 15 Minuten nach Start",
+        "message": "[Datetime | 2026-10-20 19:44 | 15 Minuten nach Start] Bitte füllen Sie den zeitbasierten Fragebogen aus.",
+        "datetime": "2026-10-20T19:44:00",
+        "duration": "00:10:00",
+        "quiet_notification": false,
+        "allow_snoozing": false
+      }
+    ],
+    "since_start": [
+      {
+        "filepath_html": "questionnaire_view.html",
+        "filepath_json": "questionnaire_time_based.json",
+        "title": "Zeitbasiert: 12 Minuten nach Start",
+        "message": "[Since-Start | 12 Minuten nach Start | ca. 19:41] Bitte füllen Sie den zeitbasierten Fragebogen aus.",
+        "from_study_start": true,
+        "seconds_since_start": 720,
+        "duration": "00:10:00",
+        "quiet_notification": false,
+        "allow_snoozing": false
+      }
+    ],
+    "periodic": [],
+    "periodic_randomized": [
+      {
+        "filepath_html": "questionnaire_view.html",
+        "filepath_json": "questionnaire_time_based.json",
+        "title": "Zeitbasiert: zufällig 17 bis 18 Minuten nach Start",
+        "message": "[Periodic-Randomized | zufällig zwischen 19:46 und 19:47 | 17-18 Minuten nach Start] Bitte füllen Sie den zeitbasierten Fragebogen aus.",
+        "start_time": "19:46:00",
+        "end_time": "19:47:00",
+        "interval_days": 1,
+        "from_study_start": true,
+        "start_date": "2026-10-20",
+        "end_date": "2026-10-20",
+        "duration": "00:10:00",
+        "quiet_notification": false,
+        "allow_snoozing": false
+      }
+    ]
+  }
+}4

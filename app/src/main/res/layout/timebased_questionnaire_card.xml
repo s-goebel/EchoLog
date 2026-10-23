@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/questionnaire_card_urgent"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="2dp"
+    android:layout_marginEnd="2dp"
+    android:layout_marginBottom="2dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?android:attr/selectableItemBackground"
+    app:cardElevation="8dp"
+    app:cardCornerRadius="8dp"
+    app:cardBackgroundColor="#FFF9E6">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Obere Zeile: Name + Warnung -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/questionnaire_name_textview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_toStartOf="@id/warning_textview"
+                android:text="Questionnaire Name"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="#D97706" />
+
+            <TextView
+                android:id="@+id/warning_textview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:text="❗"
+                android:textSize="24sp" />
+
+        </RelativeLayout>
+
+        <!-- Description -->
+        <TextView
+            android:id="@+id/questionnaire_description_textview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Questionnaire description"
+            android:textSize="14sp"
+            android:layout_marginTop="4dp"
+            android:textColor="#92400E" />
+
+        <!-- Untere Zeile: Uhrzeit rechts -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp">
+
+            <TextView
+                android:id="@+id/questionnaire_time_textview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:text="⏰ 16:18"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="#D97706" />
+
+        </RelativeLayout>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

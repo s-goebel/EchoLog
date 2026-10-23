@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Questionnaire Runner</title>
+    <style>
+        /* Base Styling */
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: #eef2f5; margin: 0; padding: 20px; color: #2c3e50; }
+        #app { max-width: 850px; margin: 0 auto; background: #fff; padding: 40px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+
+        /* Buttons */
+        .hidden { display: none !important; }
+        .btn { padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: 600; transition: opacity 0.2s, transform 0.1s; }
+        .btn:hover { opacity: 0.9; }
+        .btn:active { transform: translateY(1px); }
+        .btn-back { background: #e2e8f0; color: #475569; }
+        .btn-next, .btn-finish { background: #f97316; color: white; }
+        .btn-binary { padding: 10px 24px; background: #fff; border: 2px solid #cbd5e1; border-radius: 6px; cursor: pointer; font-size: 15px; font-weight: bold; color: #475569; transition: all 0.2s; }
+        .btn-binary.active { background: #3b82f6; border-color: #3b82f6; color: white; }
+
+        /* Survey Items */
+        .page-title { margin-top: 0; font-size: 28px; color: #1e293b; }
+        .page-info { white-space: pre-wrap; color: #64748b; margin-bottom: 35px; line-height: 1.6; font-size: 16px; }
+        .item-container { border: 2px solid transparent; padding: 20px; margin-bottom: 25px; border-radius: 8px; background: #f8fafc; transition: border-color 0.3s; }
+        .item-question { font-weight: 600; margin-bottom: 15px; font-size: 17px; color: #0f172a; }
+
+        /* Error States & Validation Tooltip */
+        .error-item { border-color: #ef4444 !important; background: #fef2f2; position: relative; }
+
+        .error-tooltip-icon {
+            position: absolute; top: -12px; right: -12px; background: #ef4444; color: white; width: 28px; height: 28px; border-radius: 50%; text-align: center; line-height: 28px; font-size: 16px; font-weight: bold; cursor: help; box-shadow: 0 2px 4px rgba(0,0,0,0.2); z-index: 10;
+        }
+
+        /* Custom Tooltip (Hover Menu) */
+        .error-tooltip-icon::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 130%; right: -10px;
+            background: #1e293b; color: #fff;
+            padding: 8px 12px; border-radius: 6px;
+            font-size: 14px; font-weight: normal;
+            white-space: pre-wrap;
+            width: max-content;
+            max-width: 250px;
+            pointer-events: none;
+            opacity: 0; transition: opacity 0.2s, transform 0.2s;
+            transform: translateY(5px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            text-align: left;
+            line-height: 1.4;
+        }
+
+        /* Tooltip Arrow */
+        .error-tooltip-icon::before {
+            content: '';
+            position: absolute;
+            bottom: 100%; right: 0px;
+            border-width: 6px;
+            border-style: solid;
+            border-color: #1e293b transparent transparent transparent;
+            pointer-events: none;
+            opacity: 0; transition: opacity 0.2s, transform 0.2s;
+            transform: translateY(5px);
+        }
+
+        .error-tooltip-icon:hover::after,
+        .error-tooltip-icon:hover::before {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Input Controls */
+        input[type="number"], input[type="text"], textarea { padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 15px; max-width: 100%; outline: none; transition: border-color 0.2s; }
+        input[type="number"]:focus, input[type="text"]:focus, textarea:focus { border-color: #3b82f6; }
+        .other-input { margin-left: 10px; width: 250px; }
+        .other-input:disabled { background: #f1f5f9; cursor: not-allowed; }
+
+        /* Options layout */
+        .options-container label { display: inline-flex; align-items: center; margin-bottom: 12px; cursor: pointer; font-size: 16px; }
+        .options-container input[type="radio"], .options-container input[type="checkbox"] { margin-right: 10px; width: 18px; height: 18px; cursor: pointer; }
+
+        /* Likert */
+        .likert-wrap { display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap; background: #fff; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0; }
+        .likert-label { font-weight: bold; color: #334155; }
+        .likert-opt { display: flex; flex-direction: column; align-items: center; cursor: pointer; font-size: 15px; font-weight: 600; }
+        .likert-opt input { margin-bottom: 8px; width: 20px; height: 20px; cursor: pointer; }
+
+        /* Navigation */
+        .nav-buttons { display: flex; justify-content: space-between; margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 25px; }
+        .nav-buttons.first-page { justify-content: flex-end; }
+
+        /* Finished */
+        .finished-container { text-align: center; padding: 40px 20px; }
+        .finished-container h1 { color: #10b981; font-size: 32px; margin-bottom: 20px; }
+        .finished-container p { font-size: 18px; color: #475569; margin-bottom: 40px; }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <!-- SURVEY SCREEN -->
+    <div id="questionnaire" class="hidden">
+        <div id="page-content"></div>
+        <div class="nav-buttons" id="nav-container">
+            <button id="btn-back" class="btn btn-back">Back</button>
+            <button id="btn-next" class="btn btn-next">Next Page</button>
+            <button id="btn-finish" class="btn btn-finish hidden">Finish</button>
+        </div>
+    </div>
+
+    <!-- FINISHED SCREEN -->
+    <div id="finished" class="hidden finished-container">
+        <h1 id="finished-title"></h1>
+        <p id="finished-msg"></p>
+        <button id="btn-final" class="btn btn-finish"></button>
+    </div>
+</div>
+
+<script>
+    // System State
+    let config = null;
+    let errors = [];
+    let csvColumns = [];
+    let defaultValues = {};
+    let itemDefsMap = {};
+
+    let currentPage = 0;
+    let answers = {};
+    let startTime = null;
+    let endTime = null;
+
+    // --- Helpers ---
+    const getLocalIsoString = (d) => {
+        const pad = n => (n < 10 ? '0' + n : n);
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    };
+
+    const createEl = (tag, className = '', text = '') => {
+        const el = document.createElement(tag);
+        if (className) el.className = className;
+        if (text) el.innerText = text;
+        return el;
+    };
+
+    const escapeCsv = (val) => {
+        if (val === null || val === undefined) return '""';
+        return `"${String(val).replace(/"/g, '""')}"`;
+    };
+
+    // --- Core Logic ---
+
+    // Polling mechanism to wait for window.currentJsonText instead of a Setup Screen
+    const initInterval = setInterval(() => {
+        if (window.currentJsonText) {
+            clearInterval(initInterval);
+            try {
+                config = JSON.parse(window.currentJsonText);
+                parseAndValidateConfig();
+                initSurvey();
+            } catch (e) {
+                alert('Invalid JSON! Check syntax and try again.\n\nError details: ' + e.message);
+            }
+        }
+    }, 200);
+
+    function parseAndValidateConfig() {
+        errors = [];
+        csvColumns = ['datetime_of_start', 'datetime_of_completion', 'errors'];
+        defaultValues = {};
+        itemDefsMap = {};
+        const seenVars = new Set();
+
+        config.pages.forEach(page => {
+            page.items.forEach(item => {
+                const fullVar = `${page.page_id}::${item.variable_name}`;
+
+                // Duplicate variable check
+                if (seenVars.has(fullVar)) {
+                    errors.push(`[${fullVar}: Two items on the same page have the same variable name => only the first usage is being shown and written in the CSV file]`);
+                    item.skipDuplicate = true;
+                    return;
+                }
+                seenVars.add(fullVar);
+                itemDefsMap[fullVar] = item;
+
+                // Missing Item Type
+                if (!item.item_type) {
+                    errors.push(`[${fullVar}: 'item_type' is missing => I skip this item and write '${config.error_value}' in its column as the value]`);
+                    item.skipItem = true;
+                    csvColumns.push(fullVar);
+                    defaultValues[fullVar] = config.error_value;
+                    return;
+                }
+
+                if (item.item_type === 'multiple_choice') {
+                    const seenOpts = new Set();
+                    item.options = item.options.filter(opt => {
+                        if (seenOpts.has(opt.option_id)) {
+                            errors.push(`[${fullVar}: Duplicate option_id '${opt.option_id}']`);
+                            return false;
+                        }
+                        seenOpts.add(opt.option_id);
+                        return true;
+                    });
+                    item.options.forEach(opt => csvColumns.push(`${fullVar}::${opt.option_id}`));
+                    if (item.allow_other) csvColumns.push(`${fullVar}::other`);
+
+                } else if (item.item_type === 'single_choice') {
+                    const seenOpts = new Set();
+                    item.options = item.options.filter(opt => {
+                        if (seenOpts.has(opt.option_id)) {
+                            errors.push(`[${fullVar}: Duplicate option_id '${opt.option_id}']`);
+                            return false;
+                        }
+                        seenOpts.add(opt.option_id);
+                        return true;
+                    });
+                    csvColumns.push(fullVar);
+
+                } else if (item.item_type === 'number' || item.item_type === 'binary' || item.item_type === 'text') {
+                    csvColumns.push(fullVar);
+
+                } else if (item.item_type === 'likert_scale') {
+                    const keys = Object.keys(item.anchors);
+                    if (keys.length < 2) {
+                        errors.push(`[${fullVar}: Likert scale requires min and max anchors]`);
+                        item.skipItem = true;
+                        csvColumns.push(fullVar);
+                        defaultValues[fullVar] = config.error_value;
+                        return;
+                    }
+
+                    let k1 = keys[0], k2 = keys[1];
+                    let v1 = parseInt(k1), v2 = parseInt(k2);
+
+                    if (isNaN(v1) || isNaN(v2)) {
+                        errors.push(`[${fullVar}: Likert anchors must be parseable as integers]`);
+                        item.skipItem = true;
+                        csvColumns.push(fullVar);
+                        defaultValues[fullVar] = config.error_value;
+                        return;
+                    }
+
+                    if (v1 > v2) {
+                        item.parsedMin = v2; item.parsedMax = v1;
+                        item.anchorMinText = item.anchors[k2]; item.anchorMaxText = item.anchors[k1];
+                    } else {
+                        item.parsedMin = v1; item.parsedMax = v2;
+                        item.anchorMinText = item.anchors[k1]; item.anchorMaxText = item.anchors[k2];
+                    }
+
+                    const steps = parseInt(item.steps);
+                    if (item.parsedMax <= item.parsedMin || (item.parsedMax - item.parsedMin) < steps) {
+                        errors.push(`[${fullVar}: max <= min or max - min < steps]`);
+                        item.skipItem = true;
+                        csvColumns.push(fullVar);
+                        defaultValues[fullVar] = config.error_value;
+                        return;
+                    }
+
+                    if ((item.parsedMax - item.parsedMin) % steps !== 0) {
+                        let newMax = item.parsedMax - ((item.parsedMax - item.parsedMin) % steps);
+                        errors.push(`[${fullVar}: (max - min) % steps != 0 => max adjusted from ${item.parsedMax} to ${newMax}]`);
+                        item.parsedMax = newMax;
+                    }
+
+                    item.parsedSteps = steps;
+                    csvColumns.push(fullVar);
+
+                } else {
+                    if (item.question) {
+                        errors.push(`[${fullVar}: the item_type '${item.item_type}' doesn't exist. Because the variable question exists, I present a normal multiline text input and save the user input as the value in the CSV file]`);
+                        item.fallbackText = true;
+                        csvColumns.push(fullVar);
+                    } else {
+                        errors.push(`[${fullVar}: invalid item_type '${item.item_type}' and no question provided]`);
+                        item.skipItem = true;
+                        csvColumns.push(fullVar);
+                        defaultValues[fullVar] = config.error_value;
+                    }
+                }
+            });
+        });
+    }
+
+    function initSurvey() {
+        document.getElementById('questionnaire').classList.remove('hidden');
+
+        document.getElementById('btn-back').innerText = config.back_button_text;
+        document.getElementById('btn-next').innerText = config.next_page_button_text;
+        document.getElementById('btn-finish').innerText = config.finish_button_text;
+
+        startTime = getLocalIsoString(new Date());
+        currentPage = 0;
+        renderPage();
+    }
+
+    function renderPage() {
+        const page = config.pages[currentPage];
+        const container = document.getElementById('page-content');
+        container.innerHTML = '';
+
+        // Headers
+        container.appendChild(createEl('h1', 'page-title', page.page_title));
+        if (page.page_information) {
+            container.appendChild(createEl('p', 'page-info', page.page_information));
+        }
+
+        // Render Items
+        page.items.forEach(itemDef => {
+            if (itemDef.skipDuplicate || itemDef.skipItem) return;
+            renderItem(itemDef, container, `${page.page_id}::${itemDef.variable_name}`);
+        });
+
+        // Navigation state
+        const nav = document.getElementById('nav-container');
+        const btnBack = document.getElementById('btn-back');
+        const btnNext = document.getElementById('btn-next');
+        const btnFinish = document.getElementById('btn-finish');
+
+        if (currentPage === 0) {
+            btnBack.classList.add('hidden');
+            nav.classList.add('first-page');
+        } else {
+            btnBack.classList.remove('hidden');
+            nav.classList.remove('first-page');
+        }
+
+        if (currentPage === config.pages.length - 1) {
+            btnNext.classList.add('hidden');
+            btnFinish.classList.remove('hidden');
+        } else {
+            btnNext.classList.remove('hidden');
+            btnFinish.classList.add('hidden');
+        }
+    }
+
+    function renderItem(itemDef, container, fullVar) {
+        const itemDiv = createEl('div', 'item-container');
+        itemDiv.id = `item-${fullVar}`;
+
+        if (itemDef.question) {
+            const qEl = createEl('div', 'item-question', itemDef.question);
+            if (itemDef.required) {
+                const reqAst = createEl('span');
+                reqAst.style.color = '#ef4444';
+                reqAst.innerText = ' *';
+                qEl.appendChild(reqAst);
+            }
+            itemDiv.appendChild(qEl);
+        }
+
+        const ans = answers[fullVar] || {};
+
+        if (itemDef.item_type === 'number') {
+            const inp = createEl('input');
+            inp.type = 'number';
+            if (itemDef.min !== undefined) inp.min = itemDef.min;
+            if (itemDef.max !== undefined) inp.max = itemDef.max;
+            inp.step = itemDef.number_type === 'integer' ? '1' : 'any';
+            if (ans.value !== undefined) inp.value = ans.value;
+            inp.addEventListener('input', e => { answers[fullVar] = { value: e.target.value }; });
+            itemDiv.appendChild(inp);
+
+        } else if (itemDef.item_type === 'text') {
+            let inp;
+            if (itemDef.allow_multiline) {
+                inp = createEl('textarea');
+                inp.rows = 4;
+                inp.style.width = '100%';
+            } else {
+                inp = createEl('input');
+                inp.type = 'text';
+                inp.style.width = '100%';
+            }
+            if (ans.value !== undefined) inp.value = ans.value;
+            inp.addEventListener('input', e => { answers[fullVar] = { value: e.target.value }; });
+            itemDiv.appendChild(inp);
+
+        } else if (itemDef.item_type === 'single_choice') {
+            const optsContainer = createEl('div', 'options-container');
+            let otherInp = null;
+
+            const updateState = () => {
+                const checked = optsContainer.querySelector(`input[name="${fullVar}"]:checked`);
+                if (!checked) return;
+                const val = checked.value;
+                if (val === 'other') {
+                    if (otherInp) otherInp.disabled = false;
+                    answers[fullVar] = { selected: 'other', otherText: otherInp ? otherInp.value : '' };
+                } else {
+                    if (otherInp) otherInp.disabled = true;
+                    answers[fullVar] = { selected: val, otherText: '' };
+                }
+            };
+
+            itemDef.options.forEach(opt => {
+                const lbl = createEl('label');
+                const rad = createEl('input');
+                rad.type = 'radio'; rad.name = fullVar; rad.value = opt.option_id;
+                if (ans.selected === opt.option_id) rad.checked = true;
+                rad.addEventListener('change', updateState);
+                lbl.appendChild(rad); lbl.appendChild(document.createTextNode(' ' + opt.label));
+                optsContainer.appendChild(lbl); optsContainer.appendChild(createEl('br'));
+            });
+
+            if (itemDef.allow_other) {
+                const lbl = createEl('label');
+                const rad = createEl('input');
+                rad.type = 'radio'; rad.name = fullVar; rad.value = 'other';
+                if (ans.selected === 'other') rad.checked = true;
+                rad.addEventListener('change', updateState);
+
+                otherInp = createEl('input'); otherInp.type = 'text'; otherInp.className = 'other-input';
+                otherInp.disabled = ans.selected !== 'other';
+                if (ans.selected === 'other' && ans.otherText) otherInp.value = ans.otherText;
+                otherInp.addEventListener('input', updateState);
+
+                lbl.appendChild(rad); lbl.appendChild(document.createTextNode(' ' + itemDef.other_label + ' ')); lbl.appendChild(otherInp);
+                optsContainer.appendChild(lbl);
+            }
+            itemDiv.appendChild(optsContainer);
+
+        } else if (itemDef.item_type === 'multiple_choice') {
+            const optsContainer = createEl('div', 'options-container');
+            let otherInp = null, otherCb = null;
+
+            const updateState = () => {
+                const selected = [];
+                optsContainer.querySelectorAll(`input[type="checkbox"].mc-regular:checked`).forEach(cb => selected.push(cb.value));
+                const otherSelected = otherCb ? otherCb.checked : false;
+                if (otherInp) otherInp.disabled = !otherSelected;
+                answers[fullVar] = { selected, otherSelected, otherText: otherSelected && otherInp ? otherInp.value : '' };
+            };
+
+            itemDef.options.forEach(opt => {
+                const lbl = createEl('label');
+                const cb = createEl('input');
+                cb.type = 'checkbox'; cb.className = 'mc-regular'; cb.value = opt.option_id;
+                if (ans.selected && ans.selected.includes(opt.option_id)) cb.checked = true;
+                cb.addEventListener('change', updateState);
+                lbl.appendChild(cb); lbl.appendChild(document.createTextNode(' ' + opt.label));
+                optsContainer.appendChild(lbl); optsContainer.appendChild(createEl('br'));
+            });
+
+            if (itemDef.allow_other) {
+                const lbl = createEl('label');
+                otherCb = createEl('input'); otherCb.type = 'checkbox';
+                if (ans.otherSelected) otherCb.checked = true;
+                otherCb.addEventListener('change', updateState);
+
+                otherInp = createEl('input'); otherInp.type = 'text'; otherInp.className = 'other-input';
+                otherInp.disabled = !ans.otherSelected;
+                if (ans.otherSelected && ans.otherText) otherInp.value = ans.otherText;
+                otherInp.addEventListener('input', updateState);
+
+                lbl.appendChild(otherCb); lbl.appendChild(document.createTextNode(' ' + itemDef.other_label + ' ')); lbl.appendChild(otherInp);
+                optsContainer.appendChild(lbl);
+            }
+            itemDiv.appendChild(optsContainer);
+
+        } else if (itemDef.item_type === 'likert_scale') {
+            const wrap = createEl('div', 'likert-wrap');
+            wrap.appendChild(createEl('span', 'likert-label', itemDef.anchorMinText));
+
+            for (let i = itemDef.parsedMin; i <= itemDef.parsedMax; i += itemDef.parsedSteps) {
+                const lbl = createEl('label', 'likert-opt');
+                const rad = createEl('input');
+                rad.type = 'radio'; rad.name = fullVar; rad.value = i;
+                if (ans.value == i) rad.checked = true;
+                rad.addEventListener('change', e => { answers[fullVar] = { value: e.target.value }; });
+                lbl.appendChild(rad); lbl.appendChild(document.createTextNode(i));
+                wrap.appendChild(lbl);
+            }
+
+            wrap.appendChild(createEl('span', 'likert-label', itemDef.anchorMaxText));
+            itemDiv.appendChild(wrap);
+
+        } else if (itemDef.item_type === 'binary') {
+            const wrap = createEl('div', 'binary-wrap');
+            const btnT = createEl('button', 'btn-binary', itemDef.true_label);
+            const btnF = createEl('button', 'btn-binary', itemDef.false_label);
+
+            if (ans.value === 1) btnT.classList.add('active');
+            if (ans.value === 0) btnF.classList.add('active');
+
+            const updateState = (val, active, inactive) => {
+                answers[fullVar] = { value: val };
+                active.classList.add('active'); inactive.classList.remove('active');
+            };
+
+            btnT.addEventListener('click', () => updateState(1, btnT, btnF));
+            btnF.addEventListener('click', () => updateState(0, btnF, btnT));
+
+            wrap.appendChild(btnT); wrap.appendChild(btnF);
+            itemDiv.appendChild(wrap);
+
+        } else if (itemDef.fallbackText) {
+            const ta = createEl('textarea');
+            ta.rows = 4; ta.style.width = '100%';
+            if (ans.value) ta.value = ans.value;
+            ta.addEventListener('input', e => { answers[fullVar] = { value: e.target.value }; });
+            itemDiv.appendChild(ta);
+        }
+
+        container.appendChild(itemDiv);
+    }
+
+    function validatePage() {
+        let firstErrorItem = null;
+        let hasError = false;
+
+        document.querySelectorAll('.item-container').forEach(el => el.classList.remove('error-item'));
+        document.querySelectorAll('.error-tooltip-icon').forEach(el => el.remove());
+        document.querySelectorAll('.text-length-error').forEach(el => el.remove());
+
+        const page = config.pages[currentPage];
+        page.items.forEach(item => {
+            if (item.skipItem || item.skipDuplicate) return;
+
+            const fullVar = `${page.page_id}::${item.variable_name}`;
+            const ans = answers[fullVar];
+            let isValid = true; // Assume valid, invalidate based on checks
+
+            if (item.item_type === 'text') {
+                if (item.required) {
+                    if (!ans || ans.value === undefined || ans.value === null || ans.value === '') {
+                        isValid = false;
+                    } else {
+                        const valLen = String(ans.value).length;
+                        if (item.min_characters !== undefined && valLen < item.min_characters) {
+                            isValid = false;
+                            const errEl = createEl('div', 'text-length-error', `${valLen} / ${item.min_characters}`);
+                            errEl.style.color = '#ef4444';
+                            errEl.style.marginTop = '6px';
+                            errEl.style.fontSize = '14px';
+                            const domItem = document.getElementById(`item-${fullVar}`);
+                            if (domItem) domItem.appendChild(errEl);
+                        } else if (item.max_characters !== undefined && valLen > item.max_characters) {
+                            isValid = false;
+                            const errEl = createEl('div', 'text-length-error', `-${valLen - item.max_characters}`);
+                            errEl.style.color = '#ef4444';
+                            errEl.style.marginTop = '6px';
+                            errEl.style.fontSize = '14px';
+                            const domItem = document.getElementById(`item-${fullVar}`);
+                            if (domItem) domItem.appendChild(errEl);
+                        }
+                    }
+                }
+            }
+            else if (item.item_type === 'single_choice') {
+                if (item.required) {
+                    if (!ans || !ans.selected) isValid = false;
+                }
+                // If "Other" is selected, the text field must NOT be empty, regardless of if the item is required
+                if (ans && ans.selected === 'other') {
+                    if (!ans.otherText || ans.otherText.trim() === '') isValid = false;
+                }
+            }
+            else if (item.item_type === 'multiple_choice') {
+                if (item.required) {
+                    if (!ans) isValid = false;
+                    else {
+                        const hasReg = ans.selected && ans.selected.length > 0;
+                        const hasOth = ans.otherSelected;
+                        if (!hasReg && !hasOth) isValid = false;
+                    }
+                }
+                // If "Other" is checked, the text field must NOT be empty, regardless of if the item is required
+                if (ans && ans.otherSelected) {
+                    if (!ans.otherText || ans.otherText.trim() === '') isValid = false;
+                }
+            }
+            else {
+                // Numbers, binary, likert, fallback text
+                if (item.required) {
+                    if (!ans || ans.value === undefined || ans.value === null || ans.value === '') isValid = false;
+                }
+            }
+
+            if (!isValid) {
+                hasError = true;
+                const domItem = document.getElementById(`item-${fullVar}`);
+                if (domItem) {
+                    domItem.classList.add('error-item');
+                    const tt = createEl('div', 'error-tooltip-icon', '?');
+                    // Tooltip text loaded from config root, with fallback
+                    tt.setAttribute('data-tooltip', config.required_message || 'You need to fill out this item before continuing.');
+                    domItem.appendChild(tt);
+                    if (!firstErrorItem) firstErrorItem = domItem;
+                }
+            }
+        });
+
+        if (hasError) {
+            firstErrorItem.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            return false;
+        }
+        return true;
+    }
+
+    document.getElementById('btn-back').addEventListener('click', () => {
+        if (currentPage > 0) {
+            currentPage--;
+            renderPage();
+        }
+    });
+
+    document.getElementById('btn-next').addEventListener('click', () => {
+        if (!validatePage()) return;
+        if (currentPage < config.pages.length - 1) {
+            currentPage++;
+            renderPage();
+            window.scrollTo(0, 0);
+        }
+    });
+
+    document.getElementById('btn-finish').addEventListener('click', () => {
+        if (!validatePage()) return;
+        endTime = getLocalIsoString(new Date());
+        finishAndExport();
+    });
+
+    function getCSVValue(headerStr) {
+        if (headerStr === 'datetime_of_start') return startTime;
+        if (headerStr === 'datetime_of_completion') return endTime;
+        if (headerStr === 'errors') return errors.length ? errors.join(', ') : '';
+
+        if (defaultValues.hasOwnProperty(headerStr)) return defaultValues[headerStr];
+
+        let matchedItem = null;
+        let matchedFullVar = null;
+
+        const possibleVars = Object.keys(itemDefsMap).sort((a,b) => b.length - a.length);
+        for (const fullVar of possibleVars) {
+            if (headerStr === fullVar || headerStr.startsWith(fullVar + '::')) {
+                matchedItem = itemDefsMap[fullVar];
+                matchedFullVar = fullVar;
+                break;
+            }
+        }
+
+        if (!matchedItem) return "";
+
+        const ans = answers[matchedFullVar];
+        const isSkippedMC = matchedItem.item_type === 'multiple_choice' && (!ans || ((!ans.selected || ans.selected.length === 0) && !ans.otherSelected));
+        const isSkippedGeneral = (!ans || ans.value === '');
+
+        if (isSkippedMC || (matchedItem.item_type !== 'multiple_choice' && isSkippedGeneral)) {
+            return config.skipped_question_value;
+        }
+
+        if (matchedItem.item_type === 'multiple_choice') {
+            const optId = headerStr.substring(matchedFullVar.length + 2);
+            if (optId === 'other') {
+                return ans.otherSelected ? (ans.otherText || '') : "0";
+            } else {
+                return (ans.selected && ans.selected.includes(optId)) ? "1" : "0";
+            }
+        } else if (matchedItem.item_type === 'single_choice') {
+            return ans.selected === 'other' ? (ans.otherText || '') : ans.selected;
+        } else {
+            return ans.value !== undefined ? String(ans.value) : '';
+        }
+    }
+
+    function finishAndExport() {
+        const headerRow = csvColumns.map(escapeCsv).join(',');
+        const dataRow = csvColumns.map(col => escapeCsv(getCSVValue(col))).join(',');
+
+        document.getElementById('questionnaire').classList.add('hidden');
+        const fin = document.getElementById('finished');
+        fin.classList.remove('hidden');
+
+        document.getElementById('finished-title').innerText = config.finished_header;
+        document.getElementById('finished-msg').innerText = config.finished_message;
+
+        const finalBtn = document.getElementById('btn-final');
+        finalBtn.innerText = config.finished_button_text;
+
+        // Execute the CSV export to Android immediately
+        window.EchoNative.saveInCSV(config.csv_savefile, headerRow, dataRow);
+
+        finalBtn.addEventListener('click', () => {
+            window.EchoNative.closeQuestionnaire();
+        });
+    }
+</script>
+</body>
+</html>

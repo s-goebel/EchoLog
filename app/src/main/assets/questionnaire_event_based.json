@@ -1,0 +1,72 @@
+{
+  "back_button_text": "Zurück",
+  "next_page_button_text": "Weiter",
+  "finish_button_text": "Abschließen",
+  "error_value": "ERROR",
+  "skipped_question_value": "SKIPPED",
+  "required_message": "Dieses Feld muss ausgefüllt werden, bevor Sie fortfahren können.",
+  "finished_header": "Vielen Dank!",
+  "finished_message": "Ihre Angaben wurden erfolgreich gespeichert.",
+  "finished_button_text": "Beenden",
+  "csv_savefile": "event_based.csv",
+  "pages": [
+    {
+      "page_id": "ui_experience",
+      "page_title": "Darstellung und Bedienbarkeit",
+      "page_information": "Bitte bewerten Sie kurz die Darstellung und Bedienbarkeit der App.",
+      "items": [
+        {
+          "variable_name": "readability",
+          "question": "Die Texte in der App waren gut lesbar.",
+          "item_type": "likert_scale",
+          "required": true,
+          "anchors": {
+            "1": "Trifft gar nicht zu",
+            "5": "Trifft voll zu"
+          },
+          "steps": 1
+        },
+        {
+          "variable_name": "clarity",
+          "question": "Die Darstellung der Fragebögen war übersichtlich.",
+          "item_type": "likert_scale",
+          "required": true,
+          "anchors": {
+            "1": "Trifft gar nicht zu",
+            "5": "Trifft voll zu"
+          },
+          "steps": 1
+        },
+        {
+          "variable_name": "ux",
+          "question": "Ich fand die App einfach zu bedienen.",
+          "item_type": "likert_scale",
+          "required": true,
+          "anchors": {
+            "1": "Trifft gar nicht zu",
+            "5": "Trifft voll zu"
+          },
+          "steps": 1
+        },
+        {
+          "variable_name": "professional",
+          "question": "Die App machte insgesamt einen seriösen Eindruck.",
+          "item_type": "likert_scale",
+          "required": true,
+          "anchors": {
+            "1": "Trifft gar nicht zu",
+            "5": "Trifft voll zu"
+          },
+          "steps": 1
+        },
+        {
+          "variable_name": "free_text",
+          "question": "Was ist Ihnen bei der Bedienung der App noch aufgefallen?",
+          "item_type": "text",
+          "allow_multiline": true,
+          "required": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,106 @@
+{
+  "back_button_text": "Zurück",
+  "next_page_button_text": "Weiter",
+  "finish_button_text": "Abschließen",
+  "error_value": "ERROR",
+  "skipped_question_value": "SKIPPED",
+  "required_message": "Dieses Feld muss ausgefüllt werden, bevor Sie fortfahren können.",
+  "finished_header": "Vielen Dank!",
+  "finished_message": "Ihre Angaben wurden erfolgreich gespeichert.",
+  "finished_button_text": "Beenden",
+  "csv_savefile": "usability_start.csv",
+  "pages": [
+    {
+      "page_id": "demographic_data",
+      "page_title": "Über Sie",
+      "page_information": "Bitte beantworten Sie zunächst einige kurze Fragen zu Ihrer Person.",
+      "items": [
+        {
+          "variable_name": "age",
+          "question": "Wie alt sind Sie?",
+          "item_type": "number",
+          "number_type": "integer",
+          "min": 16,
+          "max": 99,
+          "required": true
+        },
+        {
+          "variable_name": "os",
+          "question": "Welches Betriebssystem nutzt Ihr eigenes Smartphone?",
+          "item_type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "option_id": "android",
+              "label": "Android"
+            },
+            {
+              "option_id": "ios",
+              "label": "iOS"
+            },
+            {
+              "option_id": "anderes",
+              "label": "Anderes"
+            }
+          ]
+        },
+        {
+          "variable_name": "it_knowledge",
+          "question": "Wie gut schätzen Sie Ihren Umgang mit Smartphones und Apps ein?",
+          "item_type": "likert_scale",
+          "required": true,
+          "anchors": {
+            "1": "Sehr schlecht",
+            "5": "Sehr gut"
+          },
+          "steps": 1
+        }
+      ]
+    },
+    {
+      "page_id": "expectation",
+      "page_title": "Bevor es losgeht",
+      "page_information": "Die folgenden Fragen beziehen sich auf Ihre Erwartungen an die App.",
+      "items": [
+        {
+          "variable_name": "explanation_ema",
+          "question": "Wie verständlich war die Erklärung zu Zielen und Funktionen von EchoLog?",
+          "item_type": "likert_scale",
+          "required": true,
+          "anchors": {
+            "1": "Gar nicht verständlich",
+            "5": "Sehr verständlich"
+          },
+          "steps": 1
+        },
+        {
+          "variable_name": "explanation_process",
+          "question": "Wie verständlich war die Erklärung zum Ablauf der Studie?",
+          "item_type": "likert_scale",
+          "required": true,
+          "anchors": {
+            "1": "Gar nicht verständlich",
+            "5": "Sehr verständlich"
+          },
+          "steps": 1
+        },
+        {
+          "variable_name": "prior_ema_experience",
+          "question": "Haben Sie schon einmal bei einer Studie teilgenommen, bei der Sie mehrere Fragebögen zu bestimmten oder zufälligen Uhrzeiten ausfüllen mussten?",
+          "item_type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "option_id": "1",
+              "label": "Ja"
+            },
+            {
+              "option_id": "0",
+              "label": "Nein"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
